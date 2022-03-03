@@ -102,7 +102,6 @@ def main():
     while check_tokens():
         try:
             response = get_api_answer(current_timestamp)
-            response = 32
             homeworks = check_response(response)
             if len(homeworks) > 1:
                 message = parse_status(homeworks[0])
