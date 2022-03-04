@@ -67,9 +67,8 @@ def check_response(response):
     elif 'homeworks' not in response:
         raise KeyError('Ключа homeworks нет в ответе API')
     elif type(response['homeworks']) is not list:
-        raise TypeError('homeworks не явлеятся списком')
-    else:
-        return response['homeworks']
+        raise TypeError('homeworks не является списком')
+    return response['homeworks']
 
 
 def parse_status(homework):
@@ -84,12 +83,12 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверка наличия всех необходимых для работы бота переменных среды."""
-    if (PRACTICUM_TOKEN is None
-            or TELEGRAM_TOKEN is None
-            or TELEGRAM_CHAT_ID is None):
-        logging.critical('Отсутствуют переменные среды. '
-                         'Запуск бота не возможен!')
-        return False
+    tokens = (PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID)
+    for token in tokens:
+        if token is None:
+            logging.critical('Отсутствует переменная среды. '
+                             'Запуск бота не возможен!')
+            return False
     return True
 
 
@@ -101,21 +100,40 @@ def main():
     while check_tokens():
         try:
             response = get_api_answer(current_timestamp)
-            homeworks = check_response(response)
-            if len(homeworks) > 0:
-                message = parse_status(homeworks[0])
-                send_message(bot, message)
-            else:
-                logging.debug('Новые статусы отсутствуют')
-            current_timestamp = response.get('current_date')
-            time.sleep(RETRY_TIME)
-        except Exception as error:
+        except ConnectionError as error:
             message = f'Сбой в работе программы: {error}'
             logging.error(error)
             if cache_message != message:
                 send_message(bot, message)
                 cache_message = message
             time.sleep(RETRY_TIME)
+        else:
+            try:
+                homeworks = check_response(response)
+            except (KeyError, TypeError, DictIsEmptyError) as error:
+                message = f'Сбой в работе программы: {error}'
+                logging.error(error)
+                if cache_message != message:
+                    send_message(bot, message)
+                    cache_message = message
+                time.sleep(RETRY_TIME)
+            else:
+                if len(homeworks) > 0:
+                    try:
+                        message = parse_status(homeworks[0])
+                    except KeyError as error:
+                        message = f'Сбой в работе программы: {error}'
+                        logging.error(error)
+                        if cache_message != message:
+                            send_message(bot, message)
+                            cache_message = message
+                        time.sleep(RETRY_TIME)
+                    else:
+                        send_message(bot, message)
+                else:
+                    logging.debug('Новые статусы отсутствуют')
+                current_timestamp = response.get('current_date')
+                time.sleep(RETRY_TIME)
 
 
 if __name__ == '__main__':
