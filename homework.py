@@ -97,37 +97,35 @@ def main():
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
     cache_message = ''
+
+    def error_log_and_message(error, cache_message):
+        """Логирование ошибок и отправка сообщения об ошибке в чат."""
+        message = f'Сбой в работе программы: {error}'
+        logging.error(error)
+        if cache_message != message:
+            send_message(bot, message)
+            cache_message = message
+        time.sleep(RETRY_TIME)
+        return cache_message
+
     while check_tokens():
         try:
             response = get_api_answer(current_timestamp)
         except ConnectionError as error:
-            message = f'Сбой в работе программы: {error}'
-            logging.error(error)
-            if cache_message != message:
-                send_message(bot, message)
-                cache_message = message
-            time.sleep(RETRY_TIME)
+            cache_message = error_log_and_message(error, cache_message)
         else:
             try:
                 homeworks = check_response(response)
             except (KeyError, TypeError, DictIsEmptyError) as error:
-                message = f'Сбой в работе программы: {error}'
-                logging.error(error)
-                if cache_message != message:
-                    send_message(bot, message)
-                    cache_message = message
-                time.sleep(RETRY_TIME)
+                cache_message = error_log_and_message(error, cache_message)
             else:
                 if len(homeworks) > 0:
                     try:
                         message = parse_status(homeworks[0])
                     except KeyError as error:
-                        message = f'Сбой в работе программы: {error}'
-                        logging.error(error)
-                        if cache_message != message:
-                            send_message(bot, message)
-                            cache_message = message
-                        time.sleep(RETRY_TIME)
+                        cache_message = error_log_and_message(
+                            error, cache_message
+                        )
                     else:
                         send_message(bot, message)
                 else:
