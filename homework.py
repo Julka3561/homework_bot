@@ -103,7 +103,7 @@ def main():
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            if len(homeworks) > 1:
+            if len(homeworks) > 0:
                 message = parse_status(homeworks[0])
                 send_message(bot, message)
             else:
