@@ -1,4 +1,3 @@
-from asyncio.log import logger
 import os
 import time
 from http import HTTPStatus
@@ -88,8 +87,8 @@ def check_tokens():
     if (PRACTICUM_TOKEN is None
             or TELEGRAM_TOKEN is None
             or TELEGRAM_CHAT_ID is None):
-        logger.critical('Отсутствуют переменные среды. '
-                        'Запуск бота не возможен!')
+        logging.critical('Отсутствуют переменные среды. '
+                         'Запуск бота не возможен!')
         return False
     return True
 
@@ -107,7 +106,7 @@ def main():
                 message = parse_status(homeworks[0])
                 send_message(bot, message)
             else:
-                logger.debug('Новые статусы отсутствуют')
+                logging.debug('Новые статусы отсутствуют')
             current_timestamp = response.get('current_date')
             time.sleep(RETRY_TIME)
         except Exception as error:
