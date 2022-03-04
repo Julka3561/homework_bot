@@ -39,7 +39,7 @@ def send_message(bot, message):
     except Exception as telegram_error:
         message = (f'Сбой в работе программы: Отправка сообщения в чат не'
                    f'удалась. {telegram_error}')
-        logging.error(telegram_error)
+        logging.error(message)
     else:
         logging.info(f'Сообщение успешно отправлено: "{message}"')
 
@@ -95,7 +95,7 @@ def check_tokens():
 def error_log_and_message(bot, error, cache_message):
     """Логирование ошибок и отправка сообщения об ошибке в чат."""
     message = f'Сбой в работе программы: {error}'
-    logging.error(error)
+    logging.error(message)
     if cache_message != message:
         send_message(bot, message)
         cache_message = message
