@@ -108,13 +108,12 @@ def error_log_and_message(bot, error, cache_message):
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())-600000
+    current_timestamp = int(time.time())
     cache_message = ''
 
     while check_tokens():
         try:
             response = get_api_answer(current_timestamp)
-            print(response)
         except ConnectionError as error:
             cache_message = error_log_and_message(bot, error, cache_message)
         else:
