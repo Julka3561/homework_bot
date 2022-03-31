@@ -75,10 +75,12 @@ def parse_status(homework):
     """Получение статуса домашней работы из списка работ."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
+    reviewer_comment = homework.get('reviewer_comment')
     if homework_status not in HOMEWORK_STATUSES:
         raise KeyError(f'Неверный статус работы: {homework_status}')
     verdict = HOMEWORK_STATUSES[homework_status]
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+    return (f'Изменился статус проверки работы "{homework_name}". {verdict} '
+            f'Комментарий ревьювера: {reviewer_comment}.')
 
 
 def check_tokens():
@@ -106,12 +108,13 @@ def error_log_and_message(bot, error, cache_message):
 def main():
     """Основная логика работы бота."""
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = int(time.time())
+    current_timestamp = int(time.time())-600000
     cache_message = ''
 
     while check_tokens():
         try:
             response = get_api_answer(current_timestamp)
+            print(response)
         except ConnectionError as error:
             cache_message = error_log_and_message(bot, error, cache_message)
         else:
